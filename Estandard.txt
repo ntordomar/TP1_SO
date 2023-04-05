@@ -1,0 +1,8 @@
+ARCHIVOS EN MINÚSCULA
+
+NOMBRES DE VARIABLES new_var 
+
+if(hola) {
+
+}
+
