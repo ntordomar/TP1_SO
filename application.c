@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include "application.h"
+#include <sys/stat.h>
 
 //PREGUNTAS
 // SI TIENE QUE SER VARIABLE LA CANTIDAD DE SLAVES
@@ -19,10 +20,12 @@ int main(int argc, char *argv[]) {
     int real_file_count = 0;
     
     for(i = 1; i < num_files; i++) {
+
         if(is_file(argv[i])) {
             files_paths[real_file_count++] = argv[i];
         }
     }
+
 
     // from this point, we have in files_paths array all files.
     int num_workers = real_file_count < 20 ? real_file_count : 20;//(int) num_files*0.2; // 20% of the files MAGIC NUMBER!!!!!!!!!!!!!!
@@ -44,8 +47,10 @@ int main(int argc, char *argv[]) {
           //Saving file descriptors
         workers_fds[READ][i] = pipe_data[READ];
         workers_fds[WRITE][i] = pipe_files[WRITE];
-        close(pipe_data[WRITE]);
-        close(pipe_files[READ]);
+
+        // close(pipe_data[WRITE]);
+        // close(pipe_files[READ]);
+
         //Creating worker
         int worker_fork = fork();
         
@@ -71,6 +76,8 @@ int main(int argc, char *argv[]) {
         close(pipe_files[0]); //Closing pipes ends that the proccess is not going to use.
         close(pipe_data[1]);
     }
+
+    printf("Cantidad de workers: %d", num_workers);
         
     //INICIALMENTE MANDAMOS A CADA UNO DE LOS WORKERS 1 TRABAJO
     int file_to_send;
@@ -93,10 +100,9 @@ int main(int argc, char *argv[]) {
 }
 
 char is_file(char * path) {
-    DIR *path_dir;
-    path_dir = opendir(path);
-    struct dirent * path_dirent = readdir(path_dir);
-    return (path_dirent->d_type == DT_REG);
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISREG(path_stat.st_mode);
 }
 
 void error_call(char * message_error, int return_number) {
