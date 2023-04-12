@@ -7,6 +7,8 @@
 #include "application.h"
 #include <sys/stat.h>
 #include <string.h>
+#include <sys/select.h>
+
 
 //PREGUNTAS
 // SI TIENE QUE SER VARIABLE LA CANTIDAD DE SLAVES
@@ -31,11 +33,16 @@ int main(int argc, char *argv[]) {
     
 
     // from this point, we have in files_paths array all files.
-    int num_workers = real_file_count < 20 ? real_file_count : 20;//(int) num_files*0.2; // 20% of the files MAGIC NUMBER!!!!!!!!!!!!!!
+    int num_workers = real_file_count < 5 ? real_file_count : 5;//(int) num_files*0.2; // 20% of the files MAGIC NUMBER!!!!!!!!!!!!!!
     
     char * worker_parameters[] = { "./worker", NULL }; // parameters for execve
     int workers_fds[2][num_workers]; //matrix of workers file descriptors
     
+    int first_amount = (int) (0.2*real_file_count/num_workers);
+    if(first_amount == 0) {
+        first_amount = 1;
+    } 
+
     for(i = 0; i < num_workers; i++) {
         //Pipe that sends files to worker
         int pipe_files[2]; // 0 lectura 1 escritura
@@ -85,15 +92,22 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Cantidad de workers: %d\n", num_workers);
+    printf("%d\n", first_amount);
     
-    //INICIALMENTE MANDAMOS A CADA UNO DE LOS WORKERS 1 TRABAJO
-    int file_to_send;
-    for(file_to_send = 0; file_to_send < num_workers; file_to_send++) {
-       if( write(workers_fds[WRITE][file_to_send], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
-            error_call("Write failed", 1);
-       };
-    
+    //INICIALMENTE MANDAMOS A CADA UNO DE LOS WORKERS first_amount TRABAJOS
+    int file_to_send = 0;
+    int k;
+    int p;
+    for (p = 0; p < num_workers; p++){
+        for(k = 0; k < first_amount; k++) {
+            if(write(workers_fds[WRITE][p], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
+                error_call("Write failed", 1);
+            }
+            file_to_send++;
+        }
     }
+
+    // SELECT
     int j;
     char buffer [300] = {0};
     for(j = 0; j < num_workers; j++) {
