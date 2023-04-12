@@ -13,6 +13,7 @@
 
 
 int main(int argc, char *argv[]) {
+    
     int num_files = argc; 
     char* files_paths[num_files];
     
@@ -26,10 +27,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    
 
     // from this point, we have in files_paths array all files.
     int num_workers = real_file_count < 20 ? real_file_count : 20;//(int) num_files*0.2; // 20% of the files MAGIC NUMBER!!!!!!!!!!!!!!
-   
+    
     char * worker_parameters[] = { "./worker", NULL }; // parameters for execve
     int workers_fds[2][num_workers]; //matrix of workers file descriptors
     
@@ -58,7 +60,6 @@ int main(int argc, char *argv[]) {
             error_call("pipe call failed",1);
         }
         
-      
 
         //Closing FD from child and changing stdin and stdout
         if(worker_fork == CHILD) {
@@ -77,7 +78,7 @@ int main(int argc, char *argv[]) {
         close(pipe_data[1]);
     }
 
-    printf("Cantidad de workers: %d", num_workers);
+   
         
     //INICIALMENTE MANDAMOS A CADA UNO DE LOS WORKERS 1 TRABAJO
     int file_to_send;
@@ -87,7 +88,7 @@ int main(int argc, char *argv[]) {
     int j;
     char buffer [300] = {0};
     for(j = 0; j < num_workers; j++) {
-        read(workers_fds[READ][j],buffer,300 );
+        read(workers_fds[READ][j], buffer, 300);
         printf("%s \n",buffer);
     }
 
