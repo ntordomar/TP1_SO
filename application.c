@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <sys/select.h>
+#include "information.h"
 
 
 //PREGUNTAS
@@ -93,6 +94,8 @@ int main(int argc, char *argv[]) {
 
     printf("Cantidad de workers: %d\n", num_workers);
     printf("%d\n", first_amount);
+
+    
     
     //INICIALMENTE MANDAMOS A CADA UNO DE LOS WORKERS first_amount TRABAJOS
     int file_to_send = 0;
@@ -103,17 +106,61 @@ int main(int argc, char *argv[]) {
             if(write(workers_fds[WRITE][p], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
                 error_call("Write failed", 1);
             }
+            char eof = EOF;           
+            write(workers_fds[WRITE][p], &eof,sizeof(eof));
             file_to_send++;
         }
     }
 
+
+
     // SELECT
-    int j;
-    char buffer [300] = {0};
-    for(j = 0; j < num_workers; j++) {
-        int n = read(workers_fds[READ][j],buffer,300 );
-        buffer[n]=0;
-        printf("%s \n",buffer);
+    // int j;
+    // char buffer [300] = {0};
+    // for(j = 0; j < num_workers; j++) {
+    //     int n = read(workers_fds[READ][j],buffer,300 );
+    //     buffer[n]=0;
+    //     printf("%s \n",buffer);
+    // }
+
+    fd_set read_fds; // set with the read file descriptors
+    int max_fd = get_max_from_array(workers_fds[READ],num_workers);
+    int ready_fds; // to capture errors.
+    Response response;
+    while(file_to_send < real_file_count) {
+        FD_ZERO(&read_fds); // restore values of fds that are ready to read.
+        for(i = 0; i<num_workers; i++) {
+            FD_SET(workers_fds[READ][i], &read_fds);
+        }
+
+        ready_fds = select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+        printf("Hay %d worker libres\n",ready_fds);
+        if(ready_fds == -1) {
+            perror("select");
+            exit(1);
+        }
+
+        for(i = 0; i < num_workers; i++) {
+            if (FD_ISSET(workers_fds[READ][i], &read_fds)){
+                //READ en worker_fds[READ][i] es todo legal
+                // Leo lo del worker
+                int bytes_read = read(workers_fds[READ][i], &response, sizeof(response));
+                if (bytes_read == -1) {
+                    error_call("Error on read", 1);
+                } else {
+                    printf("-------------------\n");
+                    printf("PID: %d\n",response.pid);
+                    printf("name: %s\n",response.name);
+                    printf("md5: %s\n",response.md5);
+                    printf("-------------------\n");
+
+
+                }
+                // Si no le quedan cosas para hacer hago el write y aumento los trabajos del worker
+                
+            }
+        }
+
     }
 
     return 0;
@@ -123,6 +170,17 @@ char is_file(char * path) {
     struct stat path_stat;
     stat(path, &path_stat);
     return S_ISREG(path_stat.st_mode);
+}
+
+int get_max_from_array(int * array, int num_fd){
+    int max = array[0];
+    int i;
+    for(i = 1; i < num_fd; i++) {
+        if(array[i] > max) {
+            max = array[i];
+        }
+    }
+    return max;
 }
 
 void error_call(char * message_error, int return_number) {
