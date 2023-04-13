@@ -1,3 +1,0 @@
-www.viva64.com/en/w	1	err	Help: The documentation for all analyzer warnings is available here: https://www.viva64.com/en/w/.
-/root/application.c	61	warn	V614 Potentially uninitialized variable 'pipe_data[0]' used.
-/root/application.c	85	warn	V614 Potentially uninitialized variable 'pipe_data[1]' used. Consider checking the first actual argument of the 'dup' function.
