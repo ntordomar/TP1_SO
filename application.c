@@ -106,8 +106,8 @@ int main(int argc, char *argv[]) {
             if(write(workers_fds[WRITE][p], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
                 error_call("Write failed", 1);
             }
-            char eof = EOF;           
-            write(workers_fds[WRITE][p], &eof,sizeof(eof));
+            // char eof = EOF;           
+            // write(workers_fds[WRITE][p], &eof,sizeof(eof));
             file_to_send++;
         }
     }
@@ -127,7 +127,8 @@ int main(int argc, char *argv[]) {
     int max_fd = get_max_from_array(workers_fds[READ],num_workers);
     int ready_fds; // to capture errors.
     Response response;
-    while(file_to_send < real_file_count) {
+    printf("%d ACA\n", file_to_send);
+    while(file_to_send <= real_file_count) {
         FD_ZERO(&read_fds); // restore values of fds that are ready to read.
         for(i = 0; i<num_workers; i++) {
             FD_SET(workers_fds[READ][i], &read_fds);
@@ -144,6 +145,7 @@ int main(int argc, char *argv[]) {
             if (FD_ISSET(workers_fds[READ][i], &read_fds)){
                 //READ en worker_fds[READ][i] es todo legal
                 // Leo lo del worker
+            
                 int bytes_read = read(workers_fds[READ][i], &response, sizeof(response));
                 if (bytes_read == -1) {
                     error_call("Error on read", 1);
