@@ -6,72 +6,68 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdlib.h>
-#include "application.h"
 #include <sys/stat.h>
 #include <string.h>
 #include <sys/select.h>
 #include "information.h"
 
 
-//PREGUNTAS
-// SI TIENE QUE SER VARIABLE LA CANTIDAD DE SLAVES
-// TIENE QUE SER VARIABLE LA CANTIDAD DE PROCESOS QUE SE LE DA INCIIALMENTE A CADA WORKER.
-
 
 int main(int argc, char *argv[]) {
     int aux = 0;
     int num_files = argc; 
-    char* files_paths[num_files];
-    
+    char * files_paths[num_files];
+
     int i;
     int real_file_count = 0;
-    
     for(i = 1; i < num_files; i++) {
-
         if(is_file(argv[i])) {
-            files_paths[real_file_count++] = argv[i];
+            char * buff = malloc(strlen(argv[i]) * 2); // We decided to duplicate the length of the string in case the file has a lot of spaces.
+            if(buff == NULL){
+                error_call("Could not allocate the necesary memory\n",1);
+            }
+            normalize_string(argv[i], buff);
+            files_paths[real_file_count++] = buff;
+            printf("%s\n",files_paths[i-1]);
         }
     }
-
     
-
-    // from this point, we have in files_paths array all files.
-    int num_workers = real_file_count < 5 ? real_file_count : 5;//(int) num_files*0.2; // 20% of the files MAGIC NUMBER!!!!!!!!!!!!!!
-    printf("total files %d \n",real_file_count);
-    char * worker_parameters[] = { "./worker", NULL }; // parameters for execve
-    int workers_fds[2][num_workers]; //matrix of workers file descriptors
+    if(real_file_count == 0){
+        printf("no files recieved\n");
+        return 0;
+    }
+    
+    // from this point, we have in the files_paths array all files.
+    int num_workers = real_file_count < MAX_CANT_OF_WORKERS ? real_file_count : MAX_CANT_OF_WORKERS;
+    char * worker_parameters[] = { "./worker", NULL };  // parameters for execve
+    int workers_fds[2][num_workers];                    //matrix of workers file descriptors
     
     int first_amount = (int) (0.2*real_file_count/num_workers);
     if(first_amount == 0) {
         first_amount = 1;
     } 
-
-    for(i = 0; i < num_workers; i++) {
+    // in the following for we will create all workers and their pipes.
+    for(i = 0; i < num_workers; i++) { 
         //Pipe that sends files to worker
-        int pipe_files[2]; // 0 lectura 1 escritura
-        
+        int pipe_files[2];
         //Pipe that recieves data from worker
         int pipe_data[2];
 
         //Creating pipes
         if(pipe(pipe_files) == -1 || pipe(pipe_data) == -1) {
-            error_call("pipe call failed",1);
+            error_call("pipe call failed", 1);
         }
           //Saving file descriptors
         workers_fds[READ][i] = pipe_data[READ];
         workers_fds[WRITE][i] = pipe_files[WRITE];
 
-        // close(pipe_data[WRITE]);
-        // close(pipe_files[READ]);
-
         //Creating worker
         int worker_fork = fork();
         
         if(worker_fork == -1) {
-            error_call("pipe call failed",1);
+            error_call("pipe call failed", 1);
         }
         
-
         //Closing FD from child and changing stdin and stdout
         if(worker_fork == CHILD) {
             int j;
@@ -79,142 +75,75 @@ int main(int argc, char *argv[]) {
                 close(workers_fds[READ][j]);
                 close(workers_fds[WRITE][j]);
             }
-            close(0); // From now on, recieving information from the pipe instead od stdin
-            dup(pipe_files[READ]);
-            close(1); // form now on, sending information to the pipe instead of stdout
-            dup(pipe_data[WRITE]);
-            close(pipe_files[READ]);
-            close(pipe_data[WRITE]);
-            close(pipe_data[READ]);
-            close(pipe_files[WRITE]);
+            manage_worker_pipes(pipe_files,pipe_data); //Opening and closing desired fd before calling execve.
             execve("./worker", worker_parameters, 0);
         }
-        
-        close(pipe_files[READ]); //Closing pipes ends that the proccess is not going to use.
+        //Closing pipes ends that the proccess is not going to use.
+        close(pipe_files[READ]); 
         close(pipe_data[WRITE]);
     }
 
-    printf("Cantidad de workers: %d\n", num_workers);
-    printf("%d\n", first_amount);
 
-    char pending_jobs[num_workers];
-    
+    char pending_jobs[num_workers]; // in this array we will save the amount of files each worker is processing
     for (i = 0; i < num_workers; i++) {
         pending_jobs[i] = 0;
     }
 
-    
-    
-    //INICIALMENTE MANDAMOS A CADA UNO DE LOS WORKERS first_amount TRABAJOS
-    int file_to_send = 0;
-    int k;
-    int p;
-    int aux_jobs;
-    for (p = 0; p < num_workers; p++){
-        for(k = 0; k < first_amount; k++) {
-            if(write(workers_fds[WRITE][p], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
-                error_call("Write failed", 1);
-            }
-            char c = '\n';
-            write(workers_fds[WRITE][p], &c,1);
-            file_to_send++;
-            aux_jobs = pending_jobs[p];
-            pending_jobs[p] = aux_jobs + 1;
-            
-        }
-    }
+    int file_to_send = 0; // the number of the next file to send
 
+    //Here we send 'first_ammount' of files to each worker.
+    sending_first_files(&file_to_send, first_amount, workers_fds[WRITE],files_paths, pending_jobs, num_workers);
 
-
-    // SELECT
-    // int j;
-    // char buffer [300] = {0};
-    // for(j = 0; j < num_workers; j++) {
-    //     int n = read(workers_fds[READ][j],buffer,300 );
-    //     buffer[n]=0;
-    //     printf("%s \n",buffer);
-    // }
-
+    // Now we will use select to check which workers sent the information.    
     fd_set read_fds; // set with the read file descriptors
     int max_fd = get_max_from_array(workers_fds[READ],num_workers);
-    int ready_fds; // to capture errors.
-    Response response;
-    printf("%d ACA\n", file_to_send);
-    
-    int cantidad_de_leidos = 0;
-    while(cantidad_de_leidos < real_file_count) {
-       FD_ZERO(&read_fds); // restore values of fds that are ready to read.
-
-       for(i = 0; i<num_workers; i++) {
+    int ready_fds; // know how many workers are ready to read.
+    Response response; // a struct with the information of the worker answer.
+    int amount_read = 1;
+    int aux_jobs;
+    while(amount_read <= real_file_count) {
+        FD_ZERO(&read_fds); // restore values of fds that are ready to read.
+        for(i = 0; i<num_workers; i++) {
             FD_SET(workers_fds[READ][i], &read_fds);
         }
         
-        ready_fds = select(max_fd + 1, &read_fds, NULL, NULL, NULL);
-        
+        ready_fds = select(max_fd + 1, &read_fds, NULL, NULL, NULL); //The function returns how many workers are ready to work
         
         if(ready_fds == -1) {
-            perror("select");
-            exit(1);
+            error_call("Select failed.", 1);
         }
+        // we iterate in each worker to see if its ready to read.
         for(i = 0; i < num_workers; i++) {
-            if(FD_ISSET(workers_fds[READ][i], &read_fds)) {
-                //READ en worker_fds[READ][i] es todo legal
-                // Leo lo del worker
-
-                int bytes_read = read(workers_fds[READ][i], &response, sizeof(response));
-                if(bytes_read == -1) {
+            if(FD_ISSET(workers_fds[READ][i], &read_fds)) { //FD_ISSET returns whether if a worker is blocked for reading.
+                
+                if(read(workers_fds[READ][i], &response, sizeof(response)) == -1) {
                     error_call("Error on read", 1);
-                }else {
-                    cantidad_de_leidos ++;
+                } else {
+                    amount_read ++;
                     aux_jobs = pending_jobs[i];
                     pending_jobs[i] = aux_jobs -1;
-                    printf("este es el numero %d\n",aux);
+                    printf("este es el numero %d de %d\n",aux, real_file_count);
                     aux++;
-                    printf("-------------------\n");
-                    printf("PID: %d\n",response.pid);
-                    printf("name: %s\n",response.name);
-                    printf("md5: %s\n",response.md5);
-                    printf("-------------------\n");
+                    print_process_information(response);
 
                 }
-                if(!pending_jobs[i]){
-                    if(file_to_send < real_file_count){
-                        write(workers_fds[WRITE][i], files_paths[file_to_send], strlen(files_paths[file_to_send]));
-                        char c = '\n';
-                        write(workers_fds[WRITE][i], &c,1);
+                if(!pending_jobs[i]){ //We keep track if a worker is doing any jobs before sending a new one
+                    if(file_to_send < real_file_count){ 
+                        if (write(workers_fds[WRITE][i], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1){
+                            error_call("Write failed", 1);
+                        }
                         file_to_send++;
                         aux_jobs = pending_jobs[i];
                         pending_jobs[i] = aux_jobs + 1;
                     }
                 }
-                // Si no le quedan cosas para hacer hago el write y aumento los trabajos del worker
-                
             }
         }
-
     }
-
+    for(i = 0; i<real_file_count;i++){
+        free(files_paths[i]);
+    }
+    printf("total files %d \n",real_file_count);
     return 0;
 }
 
-char is_file(char * path) {
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISREG(path_stat.st_mode);
-}
-
-int get_max_from_array(int * array, int num_fd){
-    int max = array[0];
-    int i;
-    for(i = 1; i < num_fd; i++) {
-        if(array[i] > max) {
-            max = array[i];
-        }
-    }
-    return max;
-}
-
-void error_call(char * message_error, int return_number) {
-    perror(message_error);
-    exit(return_number);
-}
