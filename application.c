@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <unistd.h>
 #include <stdio.h>
 #include <dirent.h>
@@ -17,7 +19,7 @@
 
 
 int main(int argc, char *argv[]) {
-    
+    int aux = 0;
     int num_files = argc; 
     char* files_paths[num_files];
     
@@ -35,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     // from this point, we have in files_paths array all files.
     int num_workers = real_file_count < 5 ? real_file_count : 5;//(int) num_files*0.2; // 20% of the files MAGIC NUMBER!!!!!!!!!!!!!!
-    
+    printf("total files %d \n",real_file_count);
     char * worker_parameters[] = { "./worker", NULL }; // parameters for execve
     int workers_fds[2][num_workers]; //matrix of workers file descriptors
     
@@ -107,16 +109,18 @@ int main(int argc, char *argv[]) {
     int file_to_send = 0;
     int k;
     int p;
+    int aux_jobs;
     for (p = 0; p < num_workers; p++){
         for(k = 0; k < first_amount; k++) {
             if(write(workers_fds[WRITE][p], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
                 error_call("Write failed", 1);
             }
-
-            char eof = '\n';           
-            write(workers_fds[WRITE][p], &eof,sizeof(eof));
+            char c = '\n';
+            write(workers_fds[WRITE][p], &c,1);
             file_to_send++;
-            pending_jobs[p]++;
+            aux_jobs = pending_jobs[p];
+            pending_jobs[p] = aux_jobs + 1;
+            
         }
     }
 
@@ -136,39 +140,52 @@ int main(int argc, char *argv[]) {
     int ready_fds; // to capture errors.
     Response response;
     printf("%d ACA\n", file_to_send);
+    
+    int cantidad_de_leidos = 0;
+    while(cantidad_de_leidos < real_file_count) {
+       FD_ZERO(&read_fds); // restore values of fds that are ready to read.
 
-   
-
-
-    while(file_to_send <= real_file_count) {
-        FD_ZERO(&read_fds); // restore values of fds that are ready to read.
-        for(i = 0; i<num_workers; i++) {
+       for(i = 0; i<num_workers; i++) {
             FD_SET(workers_fds[READ][i], &read_fds);
         }
-
+        
         ready_fds = select(max_fd + 1, &read_fds, NULL, NULL, NULL);
-        printf("Hay %d worker libres\n",ready_fds);
+        
+        
         if(ready_fds == -1) {
             perror("select");
             exit(1);
         }
-
         for(i = 0; i < num_workers; i++) {
-            if (FD_ISSET(workers_fds[READ][i], &read_fds)){
+            if(FD_ISSET(workers_fds[READ][i], &read_fds)) {
                 //READ en worker_fds[READ][i] es todo legal
                 // Leo lo del worker
-            
+
                 int bytes_read = read(workers_fds[READ][i], &response, sizeof(response));
-                if (bytes_read == -1) {
+                if(bytes_read == -1) {
                     error_call("Error on read", 1);
-                } else {
+                }else {
+                    cantidad_de_leidos ++;
+                    aux_jobs = pending_jobs[i];
+                    pending_jobs[i] = aux_jobs -1;
+                    printf("este es el numero %d\n",aux);
+                    aux++;
                     printf("-------------------\n");
                     printf("PID: %d\n",response.pid);
                     printf("name: %s\n",response.name);
                     printf("md5: %s\n",response.md5);
                     printf("-------------------\n");
 
-
+                }
+                if(!pending_jobs[i]){
+                    if(file_to_send < real_file_count){
+                        write(workers_fds[WRITE][i], files_paths[file_to_send], strlen(files_paths[file_to_send]));
+                        char c = '\n';
+                        write(workers_fds[WRITE][i], &c,1);
+                        file_to_send++;
+                        aux_jobs = pending_jobs[i];
+                        pending_jobs[i] = aux_jobs + 1;
+                    }
                 }
                 // Si no le quedan cosas para hacer hago el write y aumento los trabajos del worker
                 

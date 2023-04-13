@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,27 +10,25 @@
 
 
 int main(int argc, char const *argv[]) {
+   struct Response response;
    while(1) {
+      char *line = NULL;
+      size_t len = 0;
+     getline(&line, &len, stdin);
+      // n = read(0, buff, 14); //esta leyendo los dos archivos
+      // // aca haces primero un write para el primero y despues otro para el segundo? 
+      // buff[n] = 0;
 
-      char * buff;
-      
-      buff = fgets(buff, 10, 0);//esta leyendo los dos archivos
-      // aca haces primero un write para el primero y despues otro para el segundo? 
-      
-      //printf("%s\n",buff);
+      char md5[MD5_LEN];
+      md5_calc(line, md5);
 
-
-      // struct Response response;
-
-      // char md5[MD5_LEN];
-      // md5_calc(buff, md5);
-
-      // strcpy(response.md5, md5);
-      // strcpy(response.name, buff);
-      // response.pid = getpid();
-
-      // write(1, &response, sizeof(response));
+      strcpy(response.md5, md5);
+      strcpy(response.name, line);
+      response.pid = getpid();
+      write(1, &response, sizeof(response));
+      free(line);
    }
+   
    return 0;
 }
 
