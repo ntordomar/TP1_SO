@@ -95,6 +95,12 @@ int main(int argc, char *argv[]) {
     printf("Cantidad de workers: %d\n", num_workers);
     printf("%d\n", first_amount);
 
+    char pending_jobs[num_workers];
+    
+    for (i = 0; i < num_workers; i++) {
+        pending_jobs[i] = 0;
+    }
+
     
     
     //INICIALMENTE MANDAMOS A CADA UNO DE LOS WORKERS first_amount TRABAJOS
@@ -106,9 +112,11 @@ int main(int argc, char *argv[]) {
             if(write(workers_fds[WRITE][p], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
                 error_call("Write failed", 1);
             }
-            // char eof = EOF;           
-            // write(workers_fds[WRITE][p], &eof,sizeof(eof));
+
+            char eof = '\n';           
+            write(workers_fds[WRITE][p], &eof,sizeof(eof));
             file_to_send++;
+            pending_jobs[p]++;
         }
     }
 
@@ -128,6 +136,10 @@ int main(int argc, char *argv[]) {
     int ready_fds; // to capture errors.
     Response response;
     printf("%d ACA\n", file_to_send);
+
+   
+
+
     while(file_to_send <= real_file_count) {
         FD_ZERO(&read_fds); // restore values of fds that are ready to read.
         for(i = 0; i<num_workers; i++) {

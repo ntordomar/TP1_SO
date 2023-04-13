@@ -10,42 +10,45 @@
 int main(int argc, char const *argv[]) {
    while(1) {
 
-      char buff[300] = {0};
-      int n = read(0, buff, 300); //esta leyendo los dos archivos
+      char * buff;
+      
+      buff = fgets(buff, 10, 0);//esta leyendo los dos archivos
       // aca haces primero un write para el primero y despues otro para el segundo? 
-      buff[n]=0;
+      
+      //printf("%s\n",buff);
 
 
-      struct Response response;
+      // struct Response response;
 
-      char md5[17];
-      md5_calc(buff, md5);
+      // char md5[MD5_LEN];
+      // md5_calc(buff, md5);
 
-      strcpy(response.md5, md5);
-      strcpy(response.name, buff);
-      response.pid = getpid();
+      // strcpy(response.md5, md5);
+      // strcpy(response.name, buff);
+      // response.pid = getpid();
 
-      write(1, &response, sizeof(response));
+      // write(1, &response, sizeof(response));
    }
    return 0;
 }
 
 void md5_calc(char * file, char * answer) {
    char command[BUFFER] = {0};
-   FILE *fp;
+   FILE *fp; // the file we are going to send to md5
 
-   snprintf(command, BUFFER, "md5sum %s", file);
+   snprintf(command, BUFFER, "md5sum %s", file); // creates the command we will execute
    
-   fp = popen(command, "r");
+   fp = popen(command, "r"); // creates a pipe linked with a terminal and sends the command
 
+   // Error case
    if (fp == NULL){
       perror("md5 Failed");
-      return;
+      exit(1);
    }
 
-   if (fgets(answer, 33, fp) != NULL) {
+   if (fgets(answer, MD5_LEN, fp) != NULL) {
         // Remove the trailing newline character
-        answer[strcspn(answer, "\n")] = '\0';
+        answer[strcspn(answer, "\n")] = '\0'; // changes the '\n' for '\0' -> end of string
    }
 
    pclose(fp);
