@@ -10,6 +10,10 @@
 #include <string.h>
 #include <sys/select.h>
 #include "information.h"
+#include <semaphore.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+
 
 
 
@@ -94,6 +98,21 @@ int main(int argc, char *argv[]) {
     //Here we send 'first_ammount' of files to each worker.
     sending_first_files(&file_to_send, first_amount, workers_fds[WRITE],files_paths, pending_jobs, num_workers);
 
+
+    //SHARED MEMORY
+    
+    //Creating shared memory
+    int shm_fd = shm_open();
+    if(shm_fd == -1) {
+        error_call("Error on shm_open", 1);
+    }
+
+    if(ftruncate(shm_fd, BUFSIZ * sizeof(int)) == -1) {
+        error_call("Error on ftruncate", 1);
+    }
+
+    //SHARED MEMORY 
+
     // Now we will use select to check which workers sent the information.    
     fd_set read_fds; // set with the read file descriptors
     int max_fd = get_max_from_array(workers_fds[READ],num_workers);
@@ -125,11 +144,12 @@ int main(int argc, char *argv[]) {
                     printf("este es el numero %d de %d\n",aux, real_file_count);
                     aux++;
                     print_process_information(response);
+                    // Sending information to view
 
                 }
-                if(!pending_jobs[i]){ //We keep track if a worker is doing any jobs before sending a new one
-                    if(file_to_send < real_file_count){ 
-                        if (write(workers_fds[WRITE][i], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1){
+                if(!pending_jobs[i]) { //We keep track if a worker is doing any jobs before sending a new one
+                    if(file_to_send < real_file_count) { 
+                        if(write(workers_fds[WRITE][i], files_paths[file_to_send], strlen(files_paths[file_to_send])) == -1) {
                             error_call("Write failed", 1);
                         }
                         file_to_send++;
