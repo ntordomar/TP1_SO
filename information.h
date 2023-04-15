@@ -1,3 +1,16 @@
+#include <dirent.h>
+#include <fcntl.h>
+#include <semaphore.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/select.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 
 
 #define BUFFER 1024
@@ -6,6 +19,8 @@
 #define READ 0
 #define WRITE 1
 #define MAX_CANT_OF_WORKERS 5
+#define MAX_FILES 500
+
 
 
 typedef struct Response {
@@ -21,3 +36,4 @@ char is_file(char * path);
 void error_call(char * message_error, int return_number);
 void manage_worker_pipes(int * pipe_files, int * pipe_data);
 void sending_first_files(int * file_to_send, int first_amount, int * workers_fds_write, char ** files_paths, char * pending_jobs, int num_workers);
+void close_shared_memory(void * ptr, size_t length, char* name, int fd);

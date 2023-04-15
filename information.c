@@ -1,13 +1,4 @@
 #include "information.h"
-#include <unistd.h>
-#include <stdio.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <sys/select.h>
 
 char is_file(char * path) {
     struct stat path_stat;
@@ -77,4 +68,13 @@ void sending_first_files(int * file_to_send, int first_amount, int * workers_fds
         }
     }
 }
-            
+
+void close_shared_memory(void * ptr, size_t length, char* name, int fd) {
+    close(fd);
+    if(munmap(ptr, length) == -1) {
+        error_call("Error on unmaping the shared memory", 1);
+    }
+    if(shm_unlink(name) == -1) {
+        error_call("Error on unlinking the shared memory", 1);
+    }
+}

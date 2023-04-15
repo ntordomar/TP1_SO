@@ -15,9 +15,6 @@ int main(int argc, char const *argv[]) {
       char *line = NULL;
       size_t len = 0;
       getline(&line, &len, stdin);
-      // n = read(0, buff, 14); //esta leyendo los dos archivos
-      // // aca haces primero un write para el primero y despues otro para el segundo? 
-      // buff[n] = 0;
 
       char md5[MD5_LEN];
       md5_calc(line, md5);

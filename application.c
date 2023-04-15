@@ -1,21 +1,7 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include <unistd.h>
-#include <stdio.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <sys/select.h>
 #include "information.h"
-#include <semaphore.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-
-
-
+#include "application.h"
 
 int main(int argc, char *argv[]) {
     int aux = 0;
@@ -24,6 +10,33 @@ int main(int argc, char *argv[]) {
 
     int i;
     int real_file_count = 0;
+
+
+    //SHARED MEMORY
+    
+    // Creating shared memory
+    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    if(shm_fd == -1) {
+        error_call("Error on shm_open", 1);
+    }
+
+    // Setting size of shared memory
+    if(ftruncate(shm_fd, MAX_FILES * sizeof(Response)) == -1) {
+        error_call("Error on ftruncate", 1);
+    }
+
+    // Mapping shared memory
+    Response * pointer_to_shm = (Response *) mmap(NULL, MAX_FILES * sizeof(Response),PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    //SHARED MEMORY 
+
+    //SEMPHORES  sem_post(sem*)  sem_wait(sem*)
+    sem_t * semaphore = sem_open(SEM_NAME, O_CREAT,0);
+
+    // sending to standard output the info to connect with the shared memory and semaphores
+    // the standard output can be either the pipe or the terminal.
+    printf("%s\n%s\n",SHM_NAME, SEM_NAME);
+    sleep(10);
+
     for(i = 1; i < num_files; i++) {
         if(is_file(argv[i])) {
             char * buff = malloc(strlen(argv[i]) * 2); // We decided to duplicate the length of the string in case the file has a lot of spaces.
@@ -32,7 +45,6 @@ int main(int argc, char *argv[]) {
             }
             normalize_string(argv[i], buff);
             files_paths[real_file_count++] = buff;
-            printf("%s\n",files_paths[i-1]);
         }
     }
     
@@ -44,13 +56,13 @@ int main(int argc, char *argv[]) {
     // from this point, we have in the files_paths array all files.
     int num_workers = real_file_count < MAX_CANT_OF_WORKERS ? real_file_count : MAX_CANT_OF_WORKERS;
     char * worker_parameters[] = { "./worker", NULL };  // parameters for execve
-    int workers_fds[2][num_workers];                    //matrix of workers file descriptors
+    int workers_fds[2][num_workers];                    // matrix of workers file descriptors
     
     int first_amount = (int) (0.2*real_file_count/num_workers);
     if(first_amount == 0) {
         first_amount = 1;
     } 
-    // in the following for we will create all workers and their pipes.
+    // Creating all workers and their pipes.
     for(i = 0; i < num_workers; i++) { 
         //Pipe that sends files to worker
         int pipe_files[2];
@@ -99,41 +111,34 @@ int main(int argc, char *argv[]) {
     sending_first_files(&file_to_send, first_amount, workers_fds[WRITE],files_paths, pending_jobs, num_workers);
 
 
-    //SHARED MEMORY
-    
-    //Creating shared memory
-    int shm_fd = shm_open();
-    if(shm_fd == -1) {
-        error_call("Error on shm_open", 1);
-    }
 
-    if(ftruncate(shm_fd, BUFSIZ * sizeof(int)) == -1) {
-        error_call("Error on ftruncate", 1);
-    }
+    // Creating the file of the response.
+    FILE * file_of_information = fopen("response.txt", "w");
 
-    //SHARED MEMORY 
-
-    // Now we will use select to check which workers sent the information.    
-    fd_set read_fds; // set with the read file descriptors
+    // Using select to check which workers sent the information.    
+    fd_set read_fds; // Set with the read file descriptors
     int max_fd = get_max_from_array(workers_fds[READ],num_workers);
-    int ready_fds; // know how many workers are ready to read.
-    Response response; // a struct with the information of the worker answer.
+    int ready_fds; // How many workers are ready to read.
+    Response response; // Struct with the information of the worker answer.
     int amount_read = 1;
     int aux_jobs;
     while(amount_read <= real_file_count) {
-        FD_ZERO(&read_fds); // restore values of fds that are ready to read.
+        FD_ZERO(&read_fds); // Restore values of fds that are ready to read.
         for(i = 0; i<num_workers; i++) {
+            // Addig the file descriptors to the set.
             FD_SET(workers_fds[READ][i], &read_fds);
         }
         
-        ready_fds = select(max_fd + 1, &read_fds, NULL, NULL, NULL); //The function returns how many workers are ready to work
-        
+        // Checking which workers are ready to read.
+        ready_fds = select(max_fd + 1, &read_fds, NULL, NULL, NULL);
         if(ready_fds == -1) {
             error_call("Select failed.", 1);
         }
-        // we iterate in each worker to see if its ready to read.
+        
+        // Iterating each worker to see if its ready to read.
         for(i = 0; i < num_workers; i++) {
-            if(FD_ISSET(workers_fds[READ][i], &read_fds)) { //FD_ISSET returns whether if a worker is blocked for reading.
+            // Checking whether if a worker is blocked for reading.
+            if(FD_ISSET(workers_fds[READ][i], &read_fds)) { 
                 
                 if(read(workers_fds[READ][i], &response, sizeof(response)) == -1) {
                     error_call("Error on read", 1);
@@ -141,9 +146,11 @@ int main(int argc, char *argv[]) {
                     amount_read ++;
                     aux_jobs = pending_jobs[i];
                     pending_jobs[i] = aux_jobs -1;
-                    printf("este es el numero %d de %d\n",aux, real_file_count);
-                    aux++;
-                    print_process_information(response);
+                    fprintf(file_of_information,"-------------------\n PID: %d\n name: %s md5: %s\n-------------------\n",response.pid,response.name,response.md5 );          
+                    pointer_to_shm[aux++] = response;
+                    sem_post(semaphore);
+                    
+                    // print_process_information(response);
                     // Sending information to view
 
                 }
@@ -160,10 +167,23 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    for(i = 0; i<real_file_count;i++){
+        
+    // Sending finish signal to view
+    Response finish;
+    finish.pid = -1;
+    pointer_to_shm[aux] = finish;
+
+    // Closing semaphore
+    sem_close(semaphore);
+   
+
+    // Freeing memory thats being used to store the paths.
+    for(i = 0; i < real_file_count; i++) {
         free(files_paths[i]);
     }
-    printf("total files %d \n",real_file_count);
+
+    fclose(file_of_information);
+    
     return 0;
 }
 
