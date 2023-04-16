@@ -1,19 +1,16 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -std=c99
+CFLAGS = -Wall -lrt -pthread
 
-all: application worker
+all: application view worker
 
-application: application.o
-	$(CC) $(CFLAGS) -o $@ $^
+application: application.c information.c
+	$(CC) $(CFLAGS) application.c information.c -o application
 
-application.o: application.c
-	$(CC) $(CFLAGS) -c $<
+view: view.c information.c
+	$(CC) $(CFLAGS) view.c information.c -o view
 
-worker:
-	$(CC) $(CFLAGS) -o $@ $^	
-
-worker.o: worker.c
-	$(CC) $(CFLAGS) -c $<
+worker: worker.c
+	$(CC) $(CFLAGS) worker.c -o worker
 
 clean:
-	rm -f application *.o
+	rm -f application view worker

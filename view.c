@@ -1,4 +1,10 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "information.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 
 int main(int argc, char * argv[]) {
     // Error case -> no parameters where given and it is not connected to a pipe
@@ -8,11 +14,19 @@ int main(int argc, char * argv[]) {
         if(argc != 3){
             error_call("You must send exactly 2 arguments\n",1);
         }
-        shared_memory_name = malloc(sizeof(argv[1])+1);
-        semaphore_name = malloc(sizeof(argv[2])+1);
+        
+        int size_of_shared_memory_name = BUFFER;
+        int size_of_semaphore_name = BUFFER;
 
-        strcpy(shared_memory_name, argv[1]);
-        strcpy(semaphore_name,argv[2]);
+        shared_memory_name = malloc(size_of_shared_memory_name);
+        semaphore_name = malloc(size_of_semaphore_name);
+
+        if (shared_memory_name != NULL && semaphore_name != NULL) {
+            strncpy(shared_memory_name, argv[1], size_of_shared_memory_name);
+            strncpy(semaphore_name, argv[2], size_of_semaphore_name);
+        } else {
+            error_call("Malloc failed", 1);
+        }
         
     } else { // We receive arguments from pipe or we wait for the user to send them
         printf("AISNDJAB\n");
@@ -29,16 +43,22 @@ int main(int argc, char * argv[]) {
     }
 
     // Open shared memory
-    printf("%s\n", shared_memory_name);
+    printf("HOAKJSKNDA\n");
+    printf("aa\n");
     int shm_fd = shm_open(shared_memory_name, O_RDWR, 0666);
+    printf("%d\n", shm_fd);
         
     Response * pointer_to_shm = (Response *) mmap(NULL, MAX_FILES * sizeof(Response), PROT_READ, MAP_SHARED, shm_fd, 0);
     Response * next_response = pointer_to_shm;
     // Open semaphore
     sem_t * semaphore = sem_open(semaphore_name, O_EXCL);
+    
     int auxi;
     sem_getvalue(semaphore, &auxi);
+    printf("HOLAaaaaaA\n");
     printf("%d\n",auxi);
+
+    
 
     sem_wait(semaphore);
     while((*next_response).pid > 0) {
@@ -48,7 +68,6 @@ int main(int argc, char * argv[]) {
         sem_wait(semaphore);
         next_response ++;
     }
-    printf("HOLA\n");
     // Closing semaphore
     sem_close(semaphore);
     // Closing semaphore

@@ -1,5 +1,6 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include "information.h"
 #include "application.h"
 
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]) {
     // sending to standard output the info to connect with the shared memory and semaphores
     // the standard output can be either the pipe or the terminal.
     printf("%s\n%s\n","/app_view_shm", "/app_view_sem");
-    sleep(10);
+    sleep(5);
 
     for(i = 1; i < num_files; i++) {
         if(is_file(argv[i])) {
@@ -68,9 +69,9 @@ int main(int argc, char *argv[]) {
     // Creating all workers and their pipes.
     for(i = 0; i < num_workers; i++) { 
         //Pipe that sends files to worker
-        int pipe_files[2];
+        int pipe_files[2] = {0};
         //Pipe that recieves data from worker
-        int pipe_data[2];
+        int pipe_data[2] = {0};
 
         //Creating pipes
         if(pipe(pipe_files) == -1 || pipe(pipe_data) == -1) {

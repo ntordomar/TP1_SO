@@ -1,65 +1,85 @@
 -------------------
- PID: 3554
- name: ./a.out
- md5: 8dbd29cd0647eecaa1b78205eea4b54f
+ PID: 7256
+ name: ./PVS-Studio.log
+ md5: a5458e660bebafc4a303a31c99e65d37
 -------------------
 -------------------
- PID: 3556
- name: ./application.h
- md5: 58bc9600686c9fdb206c847cb8011f4f
--------------------
--------------------
- PID: 3552
+ PID: 7255
  name: ./Makefile
- md5: 037aaecafcd28c857c327a1554d55efc
+ md5: 3954e4a9c130a0c542e403d0227a9437
 -------------------
 -------------------
- PID: 3553
+ PID: 7258
+ name: ./application
+ md5: b4ad99d226679c3ed1e65bdca475da6d
+-------------------
+-------------------
+ PID: 7259
+ name: ./application.c
+ md5: 76d9a00993e20a19ae60aec2593d82ec
+-------------------
+-------------------
+ PID: 7257
  name: ./README.md
  md5: bd95cc02c9b8a5f35153ba1fdda65654
 -------------------
 -------------------
- PID: 3555
- name: ./application.c
- md5: 9b3175d9fa73b2cd4ebde69da051f8f1
--------------------
--------------------
- PID: 3552
- name: ./response.txt
+ PID: 7255
+ name: ./index.html
  md5: d41d8cd98f00b204e9800998ecf8427e
 -------------------
 -------------------
- PID: 3554
+ PID: 7258
  name: ./information.c
- md5: 80c7a7710fa866690304c29de059d629
+ md5: 209f84b45db0ba33f28d7a634dc0f216
 -------------------
 -------------------
- PID: 3555
- name: ./view.c
- md5: d58733586e30f9394a99bb7b5aaef954
+ PID: 7257
+ name: ./report.tasks
+ md5: d2b5bd9b4684b093336f8435061df522
 -------------------
 -------------------
- PID: 3553
- name: ./view
- md5: a92067cd8f10ce495c125c2d64d05007
+ PID: 7256
+ name: ./application.h
+ md5: 58bc9600686c9fdb206c847cb8011f4f
 -------------------
 -------------------
- PID: 3554
- name: ./worker.c
- md5: 92e19c86095a76cb9e1d27673a068983
--------------------
--------------------
- PID: 3555
- name: ./worker.h
- md5: 870b2306418f487c01dd6e3cb89fe704
--------------------
--------------------
- PID: 3556
+ PID: 7259
  name: ./information.h
  md5: 3c10adda2aba6dc24932df7226450e31
 -------------------
 -------------------
- PID: 3552
+ PID: 7257
+ name: ./view
+ md5: adbdc56cff72d1d6e286f05a3893c780
+-------------------
+-------------------
+ PID: 7258
+ name: ./strace_out
+ md5: 74fb90256eeb1c3cd95c91cb990f2014
+-------------------
+-------------------
+ PID: 7255
+ name: ./response.txt
+ md5: d41d8cd98f00b204e9800998ecf8427e
+-------------------
+-------------------
+ PID: 7259
  name: ./worker
- md5: 008cf20e34ada307ef3c353519c3acf3
+ md5: 8081e9ba55ddc49a647712475fdf6d76
+-------------------
+-------------------
+ PID: 7256
+ name: ./view.c
+ md5: 7dd5415ee3b1cfdc810341fd776e5990
+-------------------
+-------------------
+ PID: 7257
+ name: ./worker.c
+ md5: 174d54b884613f8e617b3cdfe51c5be2
+-------------------
+-------------------
+ PID: 7258
+ name: ./worker.h
+ md5: 870b2306418f487c01dd6e3cb89fe704
 -------------------
