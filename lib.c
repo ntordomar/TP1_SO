@@ -1,6 +1,7 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include "information.h"
+
+#include "lib.h"
 
 char is_file(char * path) {
     struct stat path_stat;
@@ -59,12 +60,14 @@ void sending_first_files(int * file_to_send, int first_amount, int * workers_fds
     int fa;
     int work;
     int aux_jobs;
+    int auxi;
     for (work = 0; work < num_workers; work++){ // iterate in workers
         for(fa = 0; fa < first_amount; fa++) { // iterate in first ammount of files
             if(write(workers_fds_write[work], files_paths[*file_to_send], strlen(files_paths[*file_to_send])) == -1) {
                 error_call("Write failed", 1);
             }
-            (*file_to_send)++;
+            auxi = *file_to_send;
+            *file_to_send = auxi + 1;
             aux_jobs = pending_jobs[work];
             pending_jobs[work] = aux_jobs + 1;
         }
@@ -80,3 +83,4 @@ void close_shared_memory(void * ptr, size_t length, char* name, int fd) {
         error_call("Error on unlinking the shared memory", 1);
     }
 }
+
