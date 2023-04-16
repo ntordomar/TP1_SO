@@ -15,6 +15,7 @@ int main(int argc, char * argv[]) {
         strcpy(semaphore_name,argv[2]);
         
     } else { // We receive arguments from pipe or we wait for the user to send them
+        printf("AISNDJAB\n");
         shared_memory_name = NULL;
         semaphore_name = NULL;
         size_t len = 0;
@@ -28,7 +29,7 @@ int main(int argc, char * argv[]) {
     }
 
     // Open shared memory
-
+    printf("%s\n", shared_memory_name);
     int shm_fd = shm_open(shared_memory_name, O_RDWR, 0666);
         
     Response * pointer_to_shm = (Response *) mmap(NULL, MAX_FILES * sizeof(Response), PROT_READ, MAP_SHARED, shm_fd, 0);
@@ -36,20 +37,22 @@ int main(int argc, char * argv[]) {
     // Open semaphore
     sem_t * semaphore = sem_open(semaphore_name, O_EXCL);
     int auxi;
-    sleep(10);
     sem_getvalue(semaphore, &auxi);
     printf("%d\n",auxi);
+
     sem_wait(semaphore);
     while((*next_response).pid > 0) {
         // Waiting for semaphore -> if it is 0, wait until it is 1
-        sem_wait(semaphore);
         // Semaphore is 1 -> we can read from shared memory
         print_process_information(*next_response);
+        sem_wait(semaphore);
         next_response ++;
     }
-
+    printf("HOLA\n");
     // Closing semaphore
     sem_close(semaphore);
+    // Closing semaphore
+    sem_destroy(semaphore);
     // Closing shared memory
     close_shared_memory(pointer_to_shm, MAX_FILES * sizeof(Response), shared_memory_name, shm_fd);
     

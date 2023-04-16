@@ -30,11 +30,14 @@ int main(int argc, char *argv[]) {
     //SHARED MEMORY 
 
     //SEMPHORES  sem_post(sem*)  sem_wait(sem*)
-    sem_t * semaphore = sem_open(SEM_NAME, O_CREAT,0);
+    sem_t * semaphore = sem_open(SEM_NAME, O_CREAT, 0644, 0);
+    int val = 0;
+    sem_getvalue(semaphore, &val);
+    // printf("%d\n", val);
 
     // sending to standard output the info to connect with the shared memory and semaphores
     // the standard output can be either the pipe or the terminal.
-    printf("%s\n%s\n",SHM_NAME, SEM_NAME);
+    printf("%s\n%s\n","/app_view_shm", "/app_view_sem");
     sleep(10);
 
     for(i = 1; i < num_files; i++) {
@@ -49,7 +52,7 @@ int main(int argc, char *argv[]) {
     }
     
     if(real_file_count == 0){
-        printf("no files recieved\n");
+        // printf("no files recieved\n");
         return 0;
     }
     
@@ -134,6 +137,10 @@ int main(int argc, char *argv[]) {
         if(ready_fds == -1) {
             error_call("Select failed.", 1);
         }
+
+        int pepe = 0;
+        sem_getvalue(semaphore, &pepe);
+        // printf("%d\n", pepe);
         
         // Iterating each worker to see if its ready to read.
         for(i = 0; i < num_workers; i++) {
@@ -149,6 +156,10 @@ int main(int argc, char *argv[]) {
                     fprintf(file_of_information,"-------------------\n PID: %d\n name: %s md5: %s\n-------------------\n",response.pid,response.name,response.md5 );          
                     pointer_to_shm[aux++] = response;
                     sem_post(semaphore);
+
+                    val = 0;
+                    sem_getvalue(semaphore, &val);
+                    // printf("%d\n", val);
                     
                     // print_process_information(response);
                     // Sending information to view
@@ -172,10 +183,10 @@ int main(int argc, char *argv[]) {
     Response finish;
     finish.pid = -1;
     pointer_to_shm[aux] = finish;
-
+    sem_post(semaphore);
     // Closing semaphore
     sem_close(semaphore);
-   
+    // sem_destroy(semaphore);
 
     // Freeing memory thats being used to store the paths.
     for(i = 0; i < real_file_count; i++) {
