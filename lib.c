@@ -100,3 +100,5 @@ FILE * create_file(char * name, char * mode){
     }
     return file_of_information;
 }
+
+

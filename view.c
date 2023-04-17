@@ -55,7 +55,7 @@ int main(int argc, char * argv[]) {
             error_call("Could not get the name of the shared memory or semaphores.", ERROR);
         } 
     }
-
+    printf("hola\n");
     // Open shared memory
     int shm_fd = 0;
     Response * pointer_to_shm = open_shared_memory(shared_memory_name, &shm_fd);

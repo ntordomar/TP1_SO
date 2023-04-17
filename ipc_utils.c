@@ -121,3 +121,9 @@ void unlink_semaphore(char * name) {
         error_call("Unlinking semaphore", ERR_UNLINK_SEM);
     }
 }
+
+void unlink_exec_failed(char * sem1, char * sem2, char * shm){
+    sem_unlink(sem1);
+    sem_unlink(sem2);
+    shm_unlink(shm);
+}

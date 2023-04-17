@@ -65,3 +65,5 @@ sem_t * create_semaphore(char * name, int value);
 sem_t * open_semaphore(char * name, int value);
 void close_semaphore(sem_t * semaphore);
 void unlink_semaphore(char * name);
+
+void unlink_exec_failed(char * sem1, char * sem2, char * shm);

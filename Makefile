@@ -9,8 +9,8 @@ application: application.c lib.c ipc_utils.c
 view: view.c lib.c ipc_utils.c
 	$(CC) $(CFLAGS) view.c lib.c ipc_utils.c -o vista
 
-worker: worker.c
-	$(CC) $(CFLAGS) worker.c -o worker
+worker: worker.c lib.c
+	$(CC) $(CFLAGS) worker.c lib.c -o worker
 
 clean:
 	rm -f application view worker

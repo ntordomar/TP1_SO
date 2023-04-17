@@ -9,6 +9,9 @@ int main(int argc, char *argv[]) {
     int num_files = argc; 
     char * files_paths[num_files];
     int i;
+
+    //Unlinking shared memory and semaphores if a previous execution was interrupted
+    unlink_exec_failed(RDWR_SEM, SIGNAL_SEM, SH_MEM);
     
     // Creating shared memory
     
