@@ -179,16 +179,14 @@ int main(int argc, char *argv[]) {
     sem_wait(signal_sem);
 
     // Unmaping and unlinking shared memory
-    if(munmap(pointer_to_shm, MAX_FILES * sizeof(Response)) == -1) {
-        error_call("Error on unmaping the shared memory", 1);
-    }
-    shm_unlink(SH_MEM);
+    unmap_shared_memory(pointer_to_shm, &shm_fd);
+    unlink_shared_memory(SH_MEM);
 
-    // Closing both semaphores    
-    sem_close(rdwr_sem);
-    sem_close(signal_sem);
-    sem_unlink(RDWR_SEM);
-    sem_unlink(SIGNAL_SEM);
+    // Closing and unlinking both semaphores    
+    close_semaphore(rdwr_sem);
+    close_semaphore(signal_sem);
+    unlink_semaphore(RDWR_SEM);
+    unlink_semaphore(SIGNAL_SEM);
     
     // Freeing memory thats being used to store the paths.
     for(i = 0; i < real_file_count; i++) {

@@ -75,16 +75,6 @@ void sending_first_files(int * file_to_send, int first_amount, int * workers_fds
 }
 
 
-void close_shared_memory(void * ptr, size_t length, char* name, int fd) {
-    close(fd);
-    if(munmap(ptr, length) == -1) {
-        error_call("Error on unmaping the shared memory", 1);
-    }
-    if(shm_unlink(name) == -1) {
-        error_call("Error on unlinking the shared memory", 1);
-    }
-}
-
 int filter_normalize_files(int num_files, char ** argv, char ** files_paths){
     int real_file_count = 0;
     int i;

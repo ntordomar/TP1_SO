@@ -1,95 +1,105 @@
 -------------------
- PID: 49
- name: ./Makefile
- md5: 7b7ce58ac6d648d544871ca82b2d38b9
+ PID: 755
+ name: ./application
+ md5: 8a83ea3ffcbfc09bfb7ba917fe1c0b84
 -------------------
 -------------------
- PID: 53
- name: ./application.h
- md5: 8f37d0173a21f2ff10a2ea3407707963
--------------------
--------------------
- PID: 52
- name: ./application.c
- md5: 47d431a3995fe6827fbc9e5b1046d8a6
--------------------
--------------------
- PID: 50
+ PID: 753
  name: ./PVS-Studio.log
- md5: f5f453e0227a33f59ee055700d261dd3
+ md5: d3a1f7354ee293458f872f2d07c14340
 -------------------
 -------------------
- PID: 51
+ PID: 754
  name: ./README.md
  md5: bd95cc02c9b8a5f35153ba1fdda65654
 -------------------
 -------------------
- PID: 52
- name: ./lib.c
- md5: fc1cf9ea5b0d9a747c5082442f94481d
+ PID: 756
+ name: ./application.c
+ md5: b971c1eefb1fff5ef1059fb9648dfd4e
 -------------------
 -------------------
- PID: 49
- name: ./error.h
- md5: dcc316eadbfefb74ca508b72f4a51ffe
+ PID: 752
+ name: ./Makefile
+ md5: a67a1e1f428cbdd58489f037bce6d33e
 -------------------
 -------------------
- PID: 53
+ PID: 754
  name: ./ipc_utils.c
- md5: 53434da003cf02f8f4a90f051757a517
+ md5: 0f496ca0e7c02af78f1f931f6f179e71
 -------------------
 -------------------
- PID: 50
+ PID: 752
  name: ./lib.h
- md5: eac049c7b580ca1b7c120e9f04049cf8
+ md5: a1a554ae19181cd308ed63f090f2c6b6
 -------------------
 -------------------
- PID: 52
- name: ./report.tasks
- md5: 2b7154fc0cf19bf87358ecb9c284585e
+ PID: 755
+ name: ./application.h
+ md5: 6ec13cbc4cd1934060fd7edf2092e598
 -------------------
 -------------------
- PID: 53
- name: ./strace_out
- md5: 42fddfa5bffdc1a97e3b83a07fe811d8
+ PID: 756
+ name: ./lib.c
+ md5: b88305b93932deff1d100e6f63461914
 -------------------
 -------------------
- PID: 51
- name: ./md5
- md5: 8a83ea3ffcbfc09bfb7ba917fe1c0b84
--------------------
--------------------
- PID: 49
+ PID: 755
  name: ./response.txt
  md5: d41d8cd98f00b204e9800998ecf8427e
 -------------------
 -------------------
- PID: 52
+ PID: 753
+ name: ./error.h
+ md5: 339b0ee2c27322322107893fe19592ce
+-------------------
+-------------------
+ PID: 756
+ name: ./strace_out
+ md5: 9dffaf8270284522fd35dfe61b9b5062
+-------------------
+-------------------
+ PID: 754
+ name: ./md5
+ md5: 4f9a69b8ad37a346702f329de4766231
+-------------------
+-------------------
+ PID: 753
+ name: ./view
+ md5: d4f7c6a7718dab18b84d30d94fcb0c92
+-------------------
+-------------------
+ PID: 752
+ name: ./report.tasks
+ md5: 7362c975fd87210555cad47e994bb33f
+-------------------
+-------------------
+ PID: 755
+ name: ./valgrind-view-out.txt
+ md5: b0e44e0566988aa08561d47046dba5a6
+-------------------
+-------------------
+ PID: 756
  name: ./view.c
- md5: a3356aa78a06cbeac1a7dac9793509d5
+ md5: 5676888e2a79284b22238ecddca5be31
 -------------------
 -------------------
- PID: 49
+ PID: 752
  name: ./worker.c
- md5: ad5330c3a0dc7aa31151f339e28405e4
+ md5: a4a7a153cbac5cf36e6c282de6f44e65
 -------------------
 -------------------
- PID: 51
+ PID: 753
  name: ./worker
  md5: 8081e9ba55ddc49a647712475fdf6d76
 -------------------
 -------------------
- PID: 53
+ PID: 754
  name: ./vista
- md5: 88f840e27be869072cdbcebf0e53bbc4
+ md5: 22cfbc14f94b0f711b012f8175132995
 -------------------
 -------------------
- PID: 50
- name: ./valgrind-view-out.txt
- md5: c09736e3ba3fad2f2ce632d8e048f280
--------------------
--------------------
- PID: 52
+ PID: 755
  name: ./worker.h
  md5: f3c6a7ae11410adce5b15eb790fb12ed
 -------------------

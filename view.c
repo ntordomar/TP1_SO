@@ -58,33 +58,21 @@ int main(int argc, char * argv[]) {
     }
 
     // Open shared memory
-    int shm_fd;
-    if((shm_fd = shm_open(shared_memory_name, O_RDWR, 0777)) == ERROR) {
-        error_call("opening the shared memory", 1);
-        exit(1);
-    }
-    
-    Response * pointer_to_shm = (Response *) mmap(NULL, MAX_FILES * sizeof(Response), PROT_READ, MAP_SHARED, shm_fd, 0);
+    int shm_fd = 0;
+    Response * pointer_to_shm = open_shared_memory(shared_memory_name, &shm_fd);
     Response * next_response = pointer_to_shm;
 
     // Open signal semaphore
-    sem_t * signal_sem;
-    if (( signal_sem = sem_open(signal_sem_name, O_RDONLY, S_IRUSR, 0)) == SEM_FAILED) {
-        error_call("Error in opening semaphore", 1);
-        exit(1);
-    }
+    sem_t * signal_sem = open_semaphore(signal_sem_name, 0);
 
-    // Open semaphore
-    sem_t * rdwr_sem;
-    if((rdwr_sem = sem_open(rdwr_sem_name, O_RDONLY, S_IRUSR, 0)) == SEM_FAILED) {
-        error_call("Could not open semaphore",1);
-        exit(1);
-    }
+    // Open read and write semaphore
+    sem_t * rdwr_sem = open_semaphore(rdwr_sem_name, 0);
        
 
     // Turning the semaphore to 0 so the wait in application blocks
     sem_wait(signal_sem);
 
+    // Reading from shared memory
     sem_wait(rdwr_sem);
     while((*next_response).pid > 0) {
         // Waiting for semaphore -> if it is 0, wait until it is 1
@@ -93,16 +81,16 @@ int main(int argc, char * argv[]) {
         sem_wait(rdwr_sem);
         next_response ++;
     }
-    
 
     // Unmaping shared memory
+    unmap_shared_memory(pointer_to_shm, &shm_fd);
 
-    if(munmap(pointer_to_shm, MAX_FILES * sizeof(Response)) == -1) {
-        error_call("Error on unmaping the shared memory", 1);
-    }
+    // Closing read and write semaphore
+    close_semaphore(rdwr_sem);
 
-    sem_close(rdwr_sem);
-    sem_post(signal_sem);
+    // Letting application know that we are done reading
+    close_semaphore(signal_sem);
+    // Closing signal semaphore
     sem_close(signal_sem);
 
     // Freeing memory

@@ -39,14 +39,18 @@ char is_file(char * path);
 void error_call(char * message_error, int return_number);
 void manage_worker_pipes(int * pipe_files, int * pipe_data);
 void sending_first_files(int * file_to_send, int first_amount, int * workers_fds_write, char ** files_paths, char * pending_jobs, int num_workers);
-void close_shared_memory(void * ptr, size_t length, char* name, int fd);
 
 /* --- SHARED MEMORY --- */
 Response * create_shared_memory(char * name, int * shm_fd);
+Response * open_shared_memory(char * name, int * shm_fd);
+void unmap_shared_memory(Response * pointer_to_shm, int * shm_fd);
+void unlink_shared_memory(char * name);
 
 /* --- SEMAPHORE --- */
 sem_t * create_semaphore(char * name, int value);
-
+sem_t * open_semaphore(char * name, int value);
+void close_semaphore(sem_t * semaphore);
+void unlink_semaphore(char * name);
 
 int filter_normalize_files(int num_files, char ** argv, char ** files_paths);
 
