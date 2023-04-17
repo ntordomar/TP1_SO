@@ -45,3 +45,6 @@ Response * create_shared_memory(char * name, int * shm_fd);
 
 /* --- SEMAPHORE --- */
 sem_t * create_semaphore(char * name, int value);
+
+
+int filter_normalize_files(int num_files, char ** argv, char ** files_paths);

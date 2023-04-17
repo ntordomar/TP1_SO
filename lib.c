@@ -85,3 +85,20 @@ void close_shared_memory(void * ptr, size_t length, char* name, int fd) {
     }
 }
 
+int filter_normalize_files(int num_files, char ** argv, char ** files_paths){
+    int real_file_count = 0;
+    int i;
+    for(i = 1; i < num_files; i++) {
+        if(is_file(argv[i])) {
+            
+            char * buff;
+            if((buff =  calloc(strlen(argv[i]), 2) ) == NULL) { // We decided to duplicate the length of the string in case the file has a lot of spaces.
+                error_call("Could not allocate the necesary memory",1);
+            }
+            normalize_string(argv[i], buff);
+            files_paths[real_file_count++] = buff;
+        }
+    }
+    return real_file_count;
+}
+

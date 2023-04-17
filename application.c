@@ -9,7 +9,6 @@ int main(int argc, char *argv[]) {
     int num_files = argc; 
     char * files_paths[num_files];
     int i;
-    int real_file_count = 0;
     
     // Creating shared memory
     
@@ -30,21 +29,8 @@ int main(int argc, char *argv[]) {
     //Waiting for the user to start the view process
     sleep(5); 
 
-    //Looping through the arguments to determine if its a file or not, and if its a file we give it the correct format
-    for(i = 1; i < num_files; i++) {
-        if(is_file(argv[i])) {
-            
-            char * buff;
-            if((buff =  calloc(strlen(argv[i]), 2) ) == NULL) { // We decided to duplicate the length of the string in case the file has a lot of spaces.
-                error_call("Could not allocate the necesary memory\n",1);
-                exit(1);
-            }
-            normalize_string(argv[i], buff);
-            files_paths[real_file_count++] = buff;
-        }
-    }
-    files_paths[real_file_count] = NULL;
-    
+    //On the function filter_normalize_files we loop through the argv array and filter only the ones which are files
+    int real_file_count = filter_normalize_files(num_files, argv, files_paths);
     if(real_file_count == 0){
         error_call("no files recieved",0);
     }
