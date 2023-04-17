@@ -1,75 +1,80 @@
 -------------------
- PID: 9485
+ PID: 368
  name: ./application
- md5: e7f1b2765cb0fe8a83d9938809d80b96
+ md5: 9c04c8da35e750484d26c62aa804bc42
 -------------------
 -------------------
- PID: 9483
+ PID: 366
  name: ./Makefile
- md5: 5be1736005ea233b816fc72bf73bddd6
+ md5: 8c7e355682f4e8d7b524c5f6c93827a6
 -------------------
 -------------------
- PID: 9486
- name: ./application.c
- md5: 4c03c25ce599aa5fcb15cb198a2d2fc8
--------------------
--------------------
- PID: 9484
+ PID: 367
  name: ./README.md
  md5: bd95cc02c9b8a5f35153ba1fdda65654
 -------------------
 -------------------
- PID: 9487
+ PID: 370
  name: ./application.h
- md5: 8f37d0173a21f2ff10a2ea3407707963
+ md5: 6ec13cbc4cd1934060fd7edf2092e598
 -------------------
 -------------------
- PID: 9485
- name: ./ipc_utils.c
- md5: 897090a3ae7f9dd98a4508d90be9d671
+ PID: 369
+ name: ./application.c
+ md5: d73acaa8059ce300ec971932f3e6a8aa
 -------------------
 -------------------
- PID: 9483
- name: ./lib.c
- md5: 04c21ded57cb3239264bc4715c5943b4
--------------------
--------------------
- PID: 9486
- name: ./lib.h
- md5: 61e1ffc7c3854bea1daf9bfb8c3235d0
--------------------
--------------------
- PID: 9484
+ PID: 369
  name: ./response.txt
  md5: d41d8cd98f00b204e9800998ecf8427e
 -------------------
 -------------------
- PID: 9484
- name: ./worker.c
- md5: 30f2fcffcc872194c0c1b276886dcf99
+ PID: 370
+ name: ./lib.h
+ md5: b6e27917f5d384c7cfadb7dfecfc8419
 -------------------
 -------------------
- PID: 9485
- name: ./view
- md5: 8a142eb8eea7922178c650c340370fa0
+ PID: 368
+ name: ./error.h
+ md5: e6347ee047ceb6520bc21cf6fe28fde0
 -------------------
 -------------------
- PID: 9487
- name: ./valgrind-view-out.txt
- md5: f1b74bf138d898c1585db081ca8a7831
+ PID: 367
+ name: ./lib.c
+ md5: 86e9b9d31be4fe6399a95aab7238f820
 -------------------
 -------------------
- PID: 9483
+ PID: 366
+ name: ./ipc_utils.c
+ md5: ad9c46781db4ccecc221248636dbc275
+-------------------
+-------------------
+ PID: 368
  name: ./view.c
- md5: 6ae19436bf935966a2c2791785cde3bc
+ md5: 3f7a7b9bb635e241d305bdbeeb24c850
 -------------------
 -------------------
- PID: 9486
+ PID: 370
+ name: ./view
+ md5: d9e3727ca3122120d22ef1b339ada15f
+-------------------
+-------------------
+ PID: 369
+ name: ./valgrind-view-out.txt
+ md5: 2199716ce8fdbc7a5111fd59eeaa7343
+-------------------
+-------------------
+ PID: 366
+ name: ./worker.c
+ md5: 0d8a1860eb9efd4edf3fc0b8166ab881
+-------------------
+-------------------
+ PID: 367
  name: ./worker
  md5: 8081e9ba55ddc49a647712475fdf6d76
 -------------------
 -------------------
- PID: 9484
+ PID: 368
  name: ./worker.h
  md5: f3c6a7ae11410adce5b15eb790fb12ed
 -------------------

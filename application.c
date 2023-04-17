@@ -12,22 +12,10 @@ int main(int argc, char *argv[]) {
     int real_file_count = 0;
     
     // Creating shared memory
-    int shm_fd = 0;
-    if((shm_fd = shm_open(SH_MEM, O_CREAT | O_RDWR, 0777)) == ERROR) { 
-        error_call("Error opening share memory", 1);
-    }
-
-    // Setting size of shared memory
-    if(ftruncate(shm_fd, MAX_FILES * sizeof(Response)) == ERROR) {
-        error_call("Error on ftruncate", 1);
-    }
-
-    //Mapping shared memory
-    Response * pointer_to_shm;
-    if((pointer_to_shm = (Response *) mmap(NULL, MAX_FILES * sizeof(Response),PROT_WRITE, MAP_SHARED, shm_fd, 0)) == MAP_FAILED) {
-        error_call("mmap failed",1);
-    }
     
+    int shm_fd = 0;
+    Response * pointer_to_shm = create_shared_memory(SH_MEM, &shm_fd);
+   
     // Creating the semaphore of read and write files
     sem_t * rdwr_sem = create_semaphore(RDWR_SEM, 0);
 

@@ -22,8 +22,7 @@
 #define WRITE 1
 #define MAX_CANT_OF_WORKERS 5
 #define MAX_FILES 500
-
-
+#define SHM_SIZE (MAX_FILES * sizeof(Response))
 
 
 typedef struct Response {
@@ -41,7 +40,8 @@ void manage_worker_pipes(int * pipe_files, int * pipe_data);
 void sending_first_files(int * file_to_send, int first_amount, int * workers_fds_write, char ** files_paths, char * pending_jobs, int num_workers);
 void close_shared_memory(void * ptr, size_t length, char* name, int fd);
 
-/* ERRORS */
-/* --- SEMAPHORE ERRORS --- */
+/* --- SHARED MEMORY --- */
+Response * create_shared_memory(char * name, int * shm_fd);
 
+/* --- SEMAPHORE --- */
 sem_t * create_semaphore(char * name, int value);
