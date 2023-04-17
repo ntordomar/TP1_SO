@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
 
     // We will start sending files to each worker.
     while(amount_read <= real_file_count) {
+        
         FD_ZERO(&read_fds); // Restore values of fds that are ready to read.
         for(i = 0; i<num_workers; i++) {
             // Addig the file descriptors to the set.
