@@ -83,7 +83,7 @@ int filter_normalize_files(int num_files, char ** argv, char ** files_paths){
             
             char * buff;
             if((buff =  calloc(strlen(argv[i]) + 1, 2) ) == NULL) { // We decided to duplicate the length of the string in case the file has a lot of spaces.
-                error_call("Could not allocate the necesary memory",1);
+                error_call("Could not allocate the necesary memory", EXIT);
             }
             normalize_string(argv[i], buff);
             files_paths[real_file_count++] = buff;
@@ -96,7 +96,7 @@ int filter_normalize_files(int num_files, char ** argv, char ** files_paths){
 FILE * create_file(char * name, char * mode){
     FILE * file_of_information;
     if ( (file_of_information = fopen(name, mode) ) == NULL) {
-        error_call("Could not open repsonse file",1);
+        error_call("Could not open repsonse file", EXIT);
     }
     return file_of_information;
 }

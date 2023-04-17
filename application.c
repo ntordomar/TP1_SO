@@ -31,9 +31,9 @@ int main(int argc, char *argv[]) {
 
     //On the function filter_normalize_files we loop through the argv array and filter only the ones which are files
     int real_file_count = filter_normalize_files(num_files, argv, files_paths);
-    if(real_file_count == 0){
-        error_call("no files recieved",0);
-    }
+    // if(real_file_count == 0){
+    //     error_call("no files recieved",0);
+    // }
     
     // from this point, we have in the files_paths array all files with the correct format.
     // We determine the amount of workers based on the real file count
@@ -59,18 +59,15 @@ int main(int argc, char *argv[]) {
         int pipe_data[2] = {0};
 
         //Creating pipes
-        if(pipe(pipe_files) == ERROR || pipe(pipe_data) == ERROR) {
-            error_call("Pipe call failed", 1);
-        }
-          //Saving file descriptors
+        create_pipe(pipe_files);
+        create_pipe(pipe_data);
+
+         //Saving file descriptors
         workers_fds[READ][i] = pipe_data[READ];
         workers_fds[WRITE][i] = pipe_files[WRITE];
 
         //Creating worker
-        int worker_fork;        
-        if((worker_fork = fork()) == ERROR) {
-            error_call("Fork call failed", 1);
-        }
+        int worker_fork = create_process();
         
         //Closing FD from child and changing stdin and stdout
         if(worker_fork == CHILD) {
@@ -83,14 +80,12 @@ int main(int argc, char *argv[]) {
             }
             //Opening and closing desired fd before calling execve.
             manage_worker_pipes(pipe_files,pipe_data); 
-            
-            if( execve("./worker", worker_parameters, 0) == ERROR) {
-                error_call("Could not create a worker",1);
-            }
+            //Calling execve
+            start_process(WORKER_PATH, worker_parameters);
         }
         //Closing pipes that the application proccess is not going to use. (read to the pipes of information, write from  the pipe of response)
-        close(pipe_files[READ]); 
-        close(pipe_data[WRITE]);
+        close_pipe(pipe_data, WRITE);
+        close_pipe(pipe_files, READ);
     }
 
     // in this array we will save the amount of files each worker is processing
@@ -128,18 +123,20 @@ int main(int argc, char *argv[]) {
         }
         
         // Checking which workers are ready to be read.
-        if(select(max_fd + 1, &read_fds, NULL, NULL, NULL) == ERROR) {
-            error_call("Select failed.", 1);
-        }
+        select_process(max_fd, &read_fds);
+        // if(select(max_fd + 1, &read_fds, NULL, NULL, NULL) == ERROR) {
+        //     error_call("Select failed.", 1);
+        // }
         
         // Iterating each worker to see if its ready to be read.
         for(i = 0; i < num_workers; i++) {
 
             if(FD_ISSET(workers_fds[READ][i], &read_fds)) { 
-
-                if(read(workers_fds[READ][i], &response, sizeof(response) ) == ERROR) {
-                    error_call("Error on read", 1);
-                }
+                // Reading the response from the worker.
+                read_process(workers_fds[READ][i], &response);
+                // if(read(workers_fds[READ][i], &response, sizeof(response) ) == ERROR) {
+                //     error_call("Error on read", 1);
+                // }
                 amount_read ++;
                 aux_jobs = pending_jobs[i];
                 pending_jobs[i] = aux_jobs -1;
@@ -152,9 +149,8 @@ int main(int argc, char *argv[]) {
                 //We keep track if a worker is doing any jobs before sending a new one
                 if(!pending_jobs[i]) { 
                     if(file_to_send < real_file_count) { 
-                        if( write(workers_fds[WRITE][i], files_paths[file_to_send], strlen(files_paths[file_to_send])) == ERROR) {
-                            error_call("Write failed", 1);
-                        }
+                        // Sending file to worker
+                        write_process(workers_fds[WRITE][i], files_paths[file_to_send]);
                         file_to_send++;
                         aux_jobs = pending_jobs[i];
                         pending_jobs[i] = aux_jobs + 1;
@@ -166,11 +162,12 @@ int main(int argc, char *argv[]) {
 
     // Killing workers
     for(i = 0; i < num_workers; i++) {
-        kill(workers_pid[i],0);
+        kill(workers_pid[i], 0);
     }
         
     // Sending finish signal to view
     Response finish;
+    // By setting the last pid to -1, the while loop in view will stop.
     finish.pid = -1;
     pointer_to_shm[next_to_write_in_shm] = finish;
     sem_post(rdwr_sem);

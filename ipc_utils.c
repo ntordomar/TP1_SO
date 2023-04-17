@@ -1,5 +1,57 @@
 #include "lib.h"
 
+/* --- PIPES AND PROCESSES --- */
+void create_pipe(int * pipe_fd) {
+    if(pipe(pipe_fd) == ERROR) {
+        perror("Creating pipe");
+        exit(ERR_CREATE_PIPE);
+    }
+}
+
+void close_pipe(int * pipe, int fd) {
+    if(close(pipe[fd]) == ERROR) {
+        perror("Closing pipe");
+        exit(ERR_CLOSE_PIPE);
+    }
+}
+
+int create_process() {
+    int pid;
+    if((pid = fork()) == ERROR) {
+        perror("Creating worker");
+        exit(ERR_CREATE_PROCESS);
+    }
+    return pid;
+}
+
+void start_process(char * path_name, char * parameters[]) {
+    if( execve(path_name, parameters, 0) == ERROR) {
+        perror("Could not create a worker");
+        exit(ERR_START_PROCESS);
+    }
+}
+
+void select_process(int max_fd, fd_set * read_fds) {
+    if(select(max_fd + 1, read_fds, NULL, NULL, NULL) == ERROR) {
+        perror("Selecting process");
+        exit(ERR_SELECT_PROCESS);
+    }
+}
+
+void read_process(int fd, Response * response) {
+    if(read(fd, response, sizeof(Response)) == ERROR) {
+        perror("Reading process");
+        exit(ERR_READ_PROCESS);
+    }
+}
+
+void write_process(int fd, char * file_path) {
+    if(write(fd, file_path, strlen(file_path)) == ERROR) {
+        perror("Writing process");
+        exit(ERR_WRITE_PROCESS);
+    }
+}
+
 
 /* --- SHARED MEMORY --- */
 Response * create_shared_memory(char * name, int * shm_fd) {

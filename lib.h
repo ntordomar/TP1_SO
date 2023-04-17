@@ -40,6 +40,20 @@ void error_call(char * message_error, int return_number);
 void manage_worker_pipes(int * pipe_files, int * pipe_data);
 void sending_first_files(int * file_to_send, int first_amount, int * workers_fds_write, char ** files_paths, char * pending_jobs, int num_workers);
 
+int filter_normalize_files(int num_files, char ** argv, char ** files_paths);
+
+FILE * create_file(char * name, char * mode);
+
+
+/* --- PIPES AND PROCESSES --- */
+void create_pipe(int * pipe_fd);
+void close_pipe(int * pipe, int fd);
+int create_process();
+void start_process(char * path_name, char * parameters[]);
+void select_process(int max_fd, fd_set * read_fds);
+void read_process(int fd, Response * response);
+void write_process(int fd, char * file_path);
+
 /* --- SHARED MEMORY --- */
 Response * create_shared_memory(char * name, int * shm_fd);
 Response * open_shared_memory(char * name, int * shm_fd);
@@ -51,7 +65,3 @@ sem_t * create_semaphore(char * name, int value);
 sem_t * open_semaphore(char * name, int value);
 void close_semaphore(sem_t * semaphore);
 void unlink_semaphore(char * name);
-
-int filter_normalize_files(int num_files, char ** argv, char ** files_paths);
-
-FILE * create_file(char * name, char * mode);
