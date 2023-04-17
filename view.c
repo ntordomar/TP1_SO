@@ -52,8 +52,7 @@ int main(int argc, char * argv[]) {
             rdwr_sem_name[strcspn(rdwr_sem_name, "\n")] = '\0';
             signal_sem_name[strcspn(signal_sem_name, "\n")] = '\0';
         } else {
-            perror("Could not get the name of the shared memory or semaphores.");
-            exit(1);
+            error_call("Could not get the name of the shared memory or semaphores.", ERROR);
         } 
     }
 

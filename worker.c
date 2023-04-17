@@ -48,8 +48,7 @@ void md5_calc(char * file, char * answer) {
 
    // Error case
    if (fp == NULL){
-      perror("md5 Failed");
-      exit(1);
+      error_call("md5 Failed", ERROR);
    }
 
    if (fgets(answer, MD5_LEN, fp) != NULL) {
