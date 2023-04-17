@@ -24,21 +24,15 @@ int main(int argc, char *argv[]) {
 
     //Mapping shared memory
     Response * pointer_to_shm;
-    if ( (pointer_to_shm = (Response *) mmap(NULL, MAX_FILES * sizeof(Response),PROT_WRITE, MAP_SHARED, shm_fd, 0)) == MAP_FAILED ){
+    if((pointer_to_shm = (Response *) mmap(NULL, MAX_FILES * sizeof(Response),PROT_WRITE, MAP_SHARED, shm_fd, 0)) == MAP_FAILED) {
         error_call("mmap failed",1);
     }
     
     // Creating the semaphore of read and write files
-    sem_t * rdwr_sem = create_semaphore(RDWR_SEM);
-    // if((rdwr_sem = sem_open(RDWR_SEM, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR, 0) ) == SEM_FAILED) {
-    //     error_call("Unable to create read and write semaphore",1);
-    // }
+    sem_t * rdwr_sem = create_semaphore(RDWR_SEM, 0);
 
     // Creating the signal semaphore (it will indicate when view has finished tasks)
-    sem_t * signal_sem;
-    if( (signal_sem = sem_open(SIGNAL_SEM, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR,1)) == SEM_FAILED) {
-        error_call("Unable to create signal semaphore",1);
-    } 
+    sem_t * signal_sem = create_semaphore(SIGNAL_SEM, 1);
 
     // sending to standard output the info to connect with the shared memory and semaphores
     // the standard output can be either the pipe or the terminal.
@@ -53,8 +47,9 @@ int main(int argc, char *argv[]) {
         if(is_file(argv[i])) {
             
             char * buff;
-            if((buff =  malloc(strlen(argv[i]) * 2) ) == NULL) { // We decided to duplicate the length of the string in case the file has a lot of spaces.
+            if((buff =  calloc(strlen(argv[i]), 2) ) == NULL) { // We decided to duplicate the length of the string in case the file has a lot of spaces.
                 error_call("Could not allocate the necesary memory\n",1);
+                exit(1);
             }
             normalize_string(argv[i], buff);
             files_paths[real_file_count++] = buff;

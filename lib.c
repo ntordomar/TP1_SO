@@ -74,6 +74,7 @@ void sending_first_files(int * file_to_send, int first_amount, int * workers_fds
     }
 }
 
+
 void close_shared_memory(void * ptr, size_t length, char* name, int fd) {
     close(fd);
     if(munmap(ptr, length) == -1) {

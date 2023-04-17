@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include "error.h"
+
 
 #define BUFFER 1024
 #define MD5_LEN 33
@@ -20,10 +22,8 @@
 #define WRITE 1
 #define MAX_CANT_OF_WORKERS 5
 #define MAX_FILES 500
-#define ERROR -1
 
 
-#define ERR_CREATE_SEM 1
 
 
 typedef struct Response {
@@ -44,4 +44,4 @@ void close_shared_memory(void * ptr, size_t length, char* name, int fd);
 /* ERRORS */
 /* --- SEMAPHORE ERRORS --- */
 
-sem_t * create_semaphore(char * name);
+sem_t * create_semaphore(char * name, int value);

@@ -53,7 +53,7 @@ int main(int argc, char * argv[]) {
             exit(1);
         } 
     }
-    
+
     // Open shared memory
     
     int shm_fd;
@@ -77,11 +77,11 @@ int main(int argc, char * argv[]) {
         error_call("Could not open semaphore",1);
         exit(1);
     }
-    
+       
 
     // Turning the semaphore to 0 so the wait in application blocks
     sem_wait(signal_sem);
-    
+
     sem_wait(rdwr_sem);
     while((*next_response).pid > 0) {
         // Waiting for semaphore -> if it is 0, wait until it is 1
