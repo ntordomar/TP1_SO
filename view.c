@@ -21,7 +21,6 @@ int main(int argc, char * argv[]) {
         //We use strncpy because its a safe function that allows us to copy exactly n characters without possibility of overflow
         if(shared_memory_name == NULL || rdwr_sem_name == NULL || signal_sem_name == NULL) {
             error_call("Malloc failed", 1);
-            exit(1);
         } 
 
         strncpy(shared_memory_name, argv[1], BUFFER);
