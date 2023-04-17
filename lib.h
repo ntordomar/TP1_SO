@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+
 #include "error.h"
 
 
@@ -48,3 +49,5 @@ sem_t * create_semaphore(char * name, int value);
 
 
 int filter_normalize_files(int num_files, char ** argv, char ** files_paths);
+
+FILE * create_file(char * name, char * mode);

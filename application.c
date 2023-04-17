@@ -50,8 +50,8 @@ int main(int argc, char *argv[]) {
     for(i = 0; i<num_workers; i++){
         workers_pid[i] = 0;
     }
-    // Creating all workers and their pipes.
     
+    // Creating all workers and their pipes.
     for(i = 0; i < num_workers; i++) { 
         //Pipe that sends files to worker
         int pipe_files[2] = {0};
@@ -81,19 +81,20 @@ int main(int argc, char *argv[]) {
                 close(workers_fds[READ][j]);
                 close(workers_fds[WRITE][j]);
             }
-            manage_worker_pipes(pipe_files,pipe_data); //Opening and closing desired fd before calling execve.
+            //Opening and closing desired fd before calling execve.
+            manage_worker_pipes(pipe_files,pipe_data); 
             
             if( execve("./worker", worker_parameters, 0) == ERROR) {
                 error_call("Could not create a worker",1);
             }
         }
-        //Closing pipes ends that the proccess is not going to use.
+        //Closing pipes that the application proccess is not going to use. (read to the pipes of information, write from  the pipe of response)
         close(pipe_files[READ]); 
         close(pipe_data[WRITE]);
     }
 
-
-    char pending_jobs[num_workers]; // in this array we will save the amount of files each worker is processing
+    // in this array we will save the amount of files each worker is processing
+    char pending_jobs[num_workers]; 
     for (i = 0; i < num_workers; i++) {
         pending_jobs[i] = 0;
     }
@@ -106,11 +107,8 @@ int main(int argc, char *argv[]) {
 
 
 
-    // Creating the file of the response.
-    FILE * file_of_information;
-    if ( (file_of_information = fopen("response.txt", "w") ) == NULL) {
-        error_call("Could not open repsonse file",1);
-    }
+    // Creating the file of the response. 
+    FILE * file_of_information =  create_file("response.txt","w");
 
     // These are variables we will use in the process of sending files to worker.   
     fd_set read_fds; // Set with the read file descriptors
