@@ -54,7 +54,7 @@ int main(int argc, char * argv[]) {
             error_call("Could not get the name of the shared memory or semaphores.", ERROR);
         } 
     }
-    printf("hola\n");
+    
     // Open shared memory
     int shm_fd = 0;
     Response * pointer_to_shm = open_shared_memory(shared_memory_name, &shm_fd);
@@ -87,9 +87,9 @@ int main(int argc, char * argv[]) {
     close_semaphore(rdwr_sem);
 
     // Letting application know that we are done reading
-    close_semaphore(signal_sem);
+    sem_post(signal_sem);
     // Closing signal semaphore
-    sem_close(signal_sem);
+    close_semaphore(signal_sem);
 
     // Freeing memory
     free(shared_memory_name);
