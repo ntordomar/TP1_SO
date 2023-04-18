@@ -34,9 +34,9 @@ int main(int argc, char *argv[]) {
 
     //On the function filter_normalize_files we loop through the argv array and filter only the ones which are files
     int real_file_count = filter_normalize_files(num_files, argv, files_paths);
-    // if(real_file_count == 0){
-    //     error_call("no files recieved",0);
-    // }
+    if(real_file_count == 0){
+        error_call("no files recieved",0);
+    }
     
     // from this point, we have in the files_paths array all files with the correct format.
     // We determine the amount of workers based on the real file count
@@ -127,9 +127,7 @@ int main(int argc, char *argv[]) {
         
         // Checking which workers are ready to be read.
         select_process(max_fd, &read_fds);
-        // if(select(max_fd + 1, &read_fds, NULL, NULL, NULL) == ERROR) {
-        //     error_call("Select failed.", 1);
-        // }
+        
         
         // Iterating each worker to see if its ready to be read.
         for(i = 0; i < num_workers; i++) {
@@ -137,9 +135,6 @@ int main(int argc, char *argv[]) {
             if(FD_ISSET(workers_fds[READ][i], &read_fds)) { 
                 // Reading the response from the worker.
                 read_process(workers_fds[READ][i], &response);
-                // if(read(workers_fds[READ][i], &response, sizeof(response) ) == ERROR) {
-                //     error_call("Error on read", 1);
-                // }
                 amount_read ++;
                 aux_jobs = pending_jobs[i];
                 pending_jobs[i] = aux_jobs -1;
